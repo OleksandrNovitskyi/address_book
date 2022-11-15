@@ -4,48 +4,73 @@ TITLE = ["Name", "Surname", "e-mail", "Phone_number"]
 EXIT = True
 
 
-# class Person:
-#     """Represent person on address book"""
+class Person:
+    """Represent person on address book"""
 
-#     def __init__(self, name="", surname="", email="", phone_num=""):
-#         self.name = name
-#         self.surname = surname
-#         self.email = email
-#         self.phone_num = phone_num
+    def __init__(self, name="", surname="", email="", phone_num=""):
+        self.name = name
+        self.surname = surname
+        self.email = email
+        self.phone_num = phone_num
 
-#     def __str__(self):
-#         return [self.name, self.surname, self.email, self.phone_num]
-
-
-# class AddressBook:
-#     """Represent list of people
-
-#     Attributes:
-#       people: list of Person objects.
-#     """
-
-#     def __init__(self):
-#         self.people = []
-
-#     def add_person(self, person):
-#         """Adds a person to the address book.
-
-#         person: Person
-#         """
-#         self.people.append(person)
+    def __str__(self):
+        # return [self.name, self.surname, self.email, self.phone_num]
+        n = 10
+        return (
+            f"{self.name:<{n}}{self.surname:<{n}}{self.email:<{n}}{self.phone_num:<{n}}"
+        )
 
 
-def read_addr_book():
-    """Read address_book.csv file and return list of lists with data and first row (titles)"""
-    with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
-        csvreader = csv.reader(file, delimiter=";")
-        next(csvreader)
-        # for row in csvreader:
-        #     print("%-12s%-12s%-24s%-24s" % (row[0], row[1], row[2], row[3]))
-        # for elem in row:
-        #     print(*elem)
-        read_file_list = list(csvreader)
-    return read_file_list
+class AddressBook:
+    """Represent list of people
+
+    Attributes:
+      people: list of Person objects.
+    """
+
+    def __init__(self):
+        self.people = []
+
+    def __str__(self):
+        """Returns a table representation of the address book."""
+        n = 10
+        res = [f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{n}}{TITLE[3]:<{n}}"]
+        for person in self.people:
+            res.append(str(person))
+        return "\n".join(res)
+
+    def add_person(self, person):
+        """Adds a person to the address book.
+
+        person: Person
+        """
+        self.people.append(person)
+
+    def read_addr_book(self):
+        """Read address_book.csv file and return list of lists with data and first row (titles)"""
+        with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
+            csvreader = csv.reader(file, delimiter=";")
+            next(csvreader)
+            read_file_list = list(csvreader)
+            for row in read_file_list:
+                p1 = Person(*row)
+                self.add_person(p1)
+
+
+addr_book = AddressBook()
+
+
+# def read_addr_book():
+#     """Read address_book.csv file and return list of lists with data and first row (titles)"""
+#     with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
+#         csvreader = csv.reader(file, delimiter=";")
+#         next(csvreader)
+#         read_file_list = list(csvreader)
+#         for row in read_file_list:
+#             p1 = Person(*row)
+#             addr_book.add_person(p1)
+#     #     print(addr_book)
+#     # return read_file_list
 
 
 def write_addr_book(data_table):
@@ -57,14 +82,14 @@ def write_addr_book(data_table):
             writer.writerow(row)
 
 
-def brows_addr_book(data_table):
-    """Show address book"""
-    # print("%-12s%-12s%-24s%-24s" % (TITLE[0], TITLE[1], TITLE[2], TITLE[3]))
-    n = 10
-    print(f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{n}}{TITLE[3]:<{n}}")
-    for row in data_table:
-        print(f"{row[0]:<{n}}{row[1]:<{n}}{row[2]:<{n}}{row[3]:<{n}}")
-    print("")
+# def brows_addr_book(data_table):
+#     """Show address book"""
+#     # print("%-12s%-12s%-24s%-24s" % (TITLE[0], TITLE[1], TITLE[2], TITLE[3]))
+#     n = 10
+#     print(f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{n}}{TITLE[3]:<{n}}")
+#     for row in data_table:
+#         print(f"{row[0]:<{n}}{row[1]:<{n}}{row[2]:<{n}}{row[3]:<{n}}")
+#     print("")
 
 
 def add_person():
@@ -92,11 +117,11 @@ def delete_person():
 
 def finder(col_number, search_request):
     """Find part of word in data_table"""
-    data_table = read_addr_book()
-    result = []
-    for row in data_table:
+    # data_table = read_addr_book()
+    result = AddressBook
+    for row in addr_book:
         if search_request in row[col_number]:
-            result.append(row)
+            result.add_person(row)
     return result
 
 
@@ -116,7 +141,8 @@ def search_person():
         case "4":
             res = finder(3, search_request)
     if len(res) != 0:
-        brows_addr_book(res)
+        print(res)
+        # brows_addr_book(res)
     else:
         print("--- Nothing found ---\n")
     return res
@@ -131,7 +157,9 @@ def do_action():
     )
     match argument:
         case "1":
-            brows_addr_book(read_addr_book())
+            addr_book.read_addr_book()
+            print(addr_book)
+            # brows_addr_book(addr_book.read_addr_book())
         case "2":
             add_person()
         case "3":

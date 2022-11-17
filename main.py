@@ -101,7 +101,7 @@ def finder(col_number, search_request):
         try:
             if search_request in row[col_number]:
                 result.append(row)
-        except:
+        except:  # pylint: disable=bare-except
             print("Find nothing, try again")
             search_person()
     return result
@@ -128,7 +128,7 @@ def search_person():
     try:
         if len(res) != 0:
             brows_addr_book(res)
-    except:
+    except:  # pylint: disable=bare-except
         print("--- Nothing found ---\n")
         search_person()
         res = []

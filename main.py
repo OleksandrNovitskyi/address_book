@@ -77,7 +77,7 @@ def modify_person():
 def delete_person(*pers):
     """Delete person from address book"""
     person = []
-    if pers:  # != ():
+    if pers:
         person = pers[0]
         data_table = read_addr_book()
         data_table.remove(person)

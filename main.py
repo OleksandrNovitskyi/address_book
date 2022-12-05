@@ -4,7 +4,6 @@ TITLE = ["Name", "Surname", "e-mail", "Phone_number"]
 EXIT = True
 
 
-
 class Person:
     """Represent person on address book"""
 
@@ -15,10 +14,8 @@ class Person:
         self.phone_num = phone_num
 
     def __str__(self):
-        n = 10
-        return (
-            f"{self.name:<{n}}{self.surname:<{n}}{self.email:<{n}}{self.phone_num:<{n}}"
-        )
+        n = 15
+        return f"{self.name:<{n}}{self.surname:<{n}}{self.email:<{2*n}}{self.phone_num:<{2*n}}"
 
     def __iter__(self):
         return iter([self.name, self.surname, self.email, self.phone_num])
@@ -33,6 +30,23 @@ class AddressBook:
 
     def __init__(self):
         self.people = []
+        # with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
+        #     csvreader = csv.reader(file, delimiter=";")
+        #     next(csvreader)
+        #     read_file_list = list(csvreader)
+        #     for row in read_file_list:
+        #         self.people.append(Person(*row))
+
+    def __str__(self):
+        """Returns a table representation of the address book."""
+        n = 15
+        res = [f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{2*n}}{TITLE[3]:<{2*n}}"]
+        for person in self.people:
+            res.append(str(person))
+        return "\n".join(res)
+
+    def read_addr_book(self):
+        """Read address_book.csv file as instance of AddressBook"""
         with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
             csvreader = csv.reader(file, delimiter=";")
             next(csvreader)
@@ -40,15 +54,7 @@ class AddressBook:
             for row in read_file_list:
                 self.people.append(Person(*row))
 
-    def __str__(self):
-        """Returns a table representation of the address book."""
-        n = 10
-        res = [f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{n}}{TITLE[3]:<{n}}"]
-        for person in self.people:
-            res.append(str(person))
-        return "\n".join(res)
-
-    def write_addr_book(self):
+    def save_addr_book(self):
         """Write into address_book.csv file"""
         with open("address_book.csv", "w", encoding="utf8", newline="") as file:
             writer = csv.writer(file, delimiter=";")
@@ -68,7 +74,7 @@ class AddressBook:
             person.email = input("Add e-mail - ")
             person.phone_num = input("Add Phone number - ")
         self.people.append(person)
-        self.write_addr_book()
+        self.save_addr_book()
         print(f"Done, you have {len(self.people)} people in your address book\n")
 
     def modify_person(self):
@@ -102,7 +108,7 @@ class AddressBook:
         if pers:
             person = pers[0]
             self.people.remove(person)
-            self.write_addr_book()
+            self.save_addr_book()
             print("The person has been removed")
         else:
             print("Search person for delete")
@@ -160,6 +166,7 @@ def do_action():
     )
     match argument:
         case "1":
+            addr_book.read_addr_book()
             print(addr_book)
         case "2":
             addr_book.add_person()

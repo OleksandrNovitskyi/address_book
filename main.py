@@ -19,6 +19,9 @@ class Person:
             f"{self.name:<{n}}{self.surname:<{n}}{self.email:<{n}}{self.phone_num:<{n}}"
         )
 
+    def __iter__(self):
+        return iter([self.name, self.surname, self.email, self.phone_num])
+
 
 class AddressBook:
     """Represent list of people
@@ -29,6 +32,12 @@ class AddressBook:
 
     def __init__(self):
         self.people = []
+        with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
+            csvreader = csv.reader(file, delimiter=";")
+            next(csvreader)
+            read_file_list = list(csvreader)
+            for row in read_file_list:
+                self.people.append(Person(*row))
 
     def __str__(self):
         """Returns a table representation of the address book."""
@@ -38,30 +47,28 @@ class AddressBook:
             res.append(str(person))
         return "\n".join(res)
 
-    def read_addr_book(self):
-        """Read address_book.csv file and return list of lists with data and first row (titles)"""
-        with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
-            csvreader = csv.reader(file, delimiter=";")
-            next(csvreader)
-            read_file_list = list(csvreader)
-            for row in read_file_list:
-                self.people.append(Person(*row))
-        return read_file_list
+    def write_addr_book(self):
+        """Write into address_book.csv file"""
+        with open("address_book.csv", "w", encoding="utf8", newline="") as file:
+            writer = csv.writer(file, delimiter=";")
+            writer.writerow(TITLE)
+            self.people.sort(key=lambda x: x.name)
+            for row in self.people:
+                writer.writerow(row)
 
     def add_person(self, *pers):
         """Add new person to the address book"""
-        person = []
+        person = Person()
         if pers:
             person = pers[0]
         else:
-            person.append(input("Add Name - "))
-            person.append(input("Add Surname - "))
-            person.append(input("Add e-mail - "))
-            person.append(input("Add Phone number - "))
-        data_table = self.read_addr_book()
-        data_table.append(person)
-        write_addr_book(data_table)
-        print(f"Done, you have {len(data_table)} people in your address book\n")
+            person.name = input("Add Name - ")
+            person.surname = input("Add Surname - ")
+            person.email = input("Add e-mail - ")
+            person.phone_num = input("Add Phone number - ")
+        self.people.append(person)
+        self.write_addr_book()
+        print(f"Done, you have {len(self.people)} people in your address book\n")
 
     def modify_person(self):
         """Modify person in address book"""
@@ -69,20 +76,20 @@ class AddressBook:
         person_list = self.search_person()
         while len(person_list) != 1:
             print("Search too mach people, specify your search request")
-            person_list = search_person()
+            person_list = self.search_person()
         person = person_list[0]
         self.delete_person(person)
         print("Need modify:")
         modif = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
         match modif:
             case "1":
-                person[0] = input("New name:\n")
+                person.name = input("New name:\n")
             case "2":
-                person[1] = input("New surname:\n")
+                person.surname = input("New surname:\n")
             case "3":
-                person[2] = input("New e-mail:\n")
+                person.email = input("New e-mail:\n")
             case "4":
-                person[3] = input("New phone number:\n")
+                person.phone_num = input("New phone number:\n")
             case _:
                 print("Incorrect input, try again")
                 self.modify_person()
@@ -93,9 +100,8 @@ class AddressBook:
         person = []
         if pers:
             person = pers[0]
-            data_table = self.read_addr_book()
-            data_table.remove(person)
-            write_addr_book(data_table)
+            self.people.remove(person)
+            self.write_addr_book()
             print("The person has been removed")
         else:
             print("Search person for delete")
@@ -106,58 +112,39 @@ class AddressBook:
             person = person_list[0]
             self.delete_person(person)
 
-    def finder(self, col_number, search_request):
-        """Find part of word in data_table"""
-        data_table = self.read_addr_book()
-        result = []
-        for row in data_table:
-            try:
-                if search_request == row[col_number]:
-                    result.append(row)
-            except:
-                print("Find nothing, try again")
-                self.search_person()
-        return result
-
     def search_person(self):
         """Search person in address book"""
         print("Search by:")
         argument = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
-
+        result = []
+        search_request = input("Search request: ")
         match argument:
             case "1":
-                search_request = input("Search request: ")
-                res = self.finder(0, search_request)
+                for row in self.people:
+                    if search_request in row.name:
+                        result.append(row)
             case "2":
-                search_request = input("Search request: ")
-                res = self.finder(1, search_request)
+                for row in self.people:
+                    if search_request in row.surname:
+                        result.append(row)
             case "3":
-                search_request = input("Search request: ")
-                res = self.finder(2, search_request)
+                for row in self.people:
+                    if search_request in row.email:
+                        result.append(row)
             case "4":
-                search_request = input("Search request: ")
-                res = self.finder(3, search_request)
+                for row in self.people:
+                    if search_request in row.phone_num:
+                        result.append(row)
             case _:
                 print("Incorrect input, try again")
                 self.search_person()
-        try:
-            if len(res) != 0:
-                print(addr_book)
-        except:
-            print("--- Nothing found ---\n")
+        if len(result) != 0:
+            for row in result:
+                print(row)
+        else:
+            print("Find nothing, try again")
             self.search_person()
-            res = []
-        return res
-
-
-def write_addr_book(data_table):
-    """Write into address_book.csv file"""
-    with open("address_book.csv", "w", encoding="utf8", newline="") as file:
-        writer = csv.writer(file, delimiter=";")
-        writer.writerow(TITLE)
-        data_table.sort(key=lambda x: x[0])
-        for row in data_table:
-            writer.writerow(row)
+        return result
 
 
 addr_book = AddressBook()
@@ -172,7 +159,6 @@ def do_action():
     )
     match argument:
         case "1":
-            addr_book.read_addr_book()
             print(addr_book)
         case "2":
             addr_book.add_person()

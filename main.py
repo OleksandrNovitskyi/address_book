@@ -4,6 +4,7 @@ TITLE = ["Name", "Surname", "e-mail", "Phone_number"]
 EXIT = True
 
 
+
 class Person:
     """Represent person on address book"""
 

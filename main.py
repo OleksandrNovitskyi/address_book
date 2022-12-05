@@ -30,22 +30,9 @@ class AddressBook:
 
     def __init__(self):
         self.people = []
-        # with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
-        #     csvreader = csv.reader(file, delimiter=";")
-        #     next(csvreader)
-        #     read_file_list = list(csvreader)
-        #     for row in read_file_list:
-        #         self.people.append(Person(*row))
+        self.load_addr_book()
 
-    def __str__(self):
-        """Returns a table representation of the address book."""
-        n = 15
-        res = [f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{2*n}}{TITLE[3]:<{2*n}}"]
-        for person in self.people:
-            res.append(str(person))
-        return "\n".join(res)
-
-    def read_addr_book(self):
+    def load_addr_book(self):
         """Read address_book.csv file as instance of AddressBook"""
         with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
             csvreader = csv.reader(file, delimiter=";")
@@ -59,31 +46,26 @@ class AddressBook:
         with open("address_book.csv", "w", encoding="utf8", newline="") as file:
             writer = csv.writer(file, delimiter=";")
             writer.writerow(TITLE)
-            self.people.sort(key=lambda x: x.name)
             for row in self.people:
                 writer.writerow(row)
 
     def add_person(self, *pers):
         """Add new person to the address book"""
-        person = Person()
         if pers:
             person = pers[0]
         else:
-            person.name = input("Add Name - ")
-            person.surname = input("Add Surname - ")
-            person.email = input("Add e-mail - ")
-            person.phone_num = input("Add Phone number - ")
+            name = input("Add Name - ")
+            surname = input("Add Surname - ")
+            email = input("Add e-mail - ")
+            phone_num = input("Add Phone number - ")
+            person = Person(name, surname, email, phone_num)
         self.people.append(person)
-        self.save_addr_book()
         print(f"Done, you have {len(self.people)} people in your address book\n")
 
     def modify_person(self):
         """Modify person in address book"""
         print("Search person")
         person_list = self.search_person()
-        while len(person_list) != 1:
-            print("Search too mach people, specify your search request")
-            person_list = self.search_person()
         person = person_list[0]
         self.delete_person(person)
         print("Need modify:")
@@ -108,14 +90,10 @@ class AddressBook:
         if pers:
             person = pers[0]
             self.people.remove(person)
-            self.save_addr_book()
             print("The person has been removed")
         else:
             print("Search person for delete")
             person_list = self.search_person()
-            while len(person_list) != 1:
-                print("Search too mach people, specify your search request")
-                person_list = self.search_person()
             person = person_list[0]
             self.delete_person(person)
 
@@ -146,40 +124,46 @@ class AddressBook:
                 print("Incorrect input, try again")
                 self.search_person()
         if len(result) != 0:
-            for row in result:
-                print(row)
+            print(row)
         else:
             print("Find nothing, try again")
-            self.search_person()
         return result
+
+    def browse_addr_book(self):
+        """Browse Address book to screen"""
+        n = 15
+        print(f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{2*n}}{TITLE[3]:<{2*n}}")
+        print(*self.people, sep="\n")
 
 
 addr_book = AddressBook()
 
 
+def stop_program():
+    """Stop program execution"""
+    global EXIT
+    EXIT = False
+    addr_book.save_addr_book()
+
+
 def do_action():
     """Choose action to do some thing"""
-    global EXIT
     print("Type action:")
     argument = input(
         "1 - Browse; 2 - Add; 3 - Modify; 4 - Delete; 5 - Search; 0 - Exit \n"
     )
-    match argument:
-        case "1":
-            addr_book.read_addr_book()
-            print(addr_book)
-        case "2":
-            addr_book.add_person()
-        case "3":
-            addr_book.modify_person()
-        case "4":
-            addr_book.delete_person()
-        case "5":
-            addr_book.search_person()
-        case "0":
-            EXIT = False
-        case _:
-            print("Incorrect input")
+    dispatcher = {
+        "1": addr_book.browse_addr_book,
+        "2": addr_book.add_person,
+        "3": addr_book.modify_person,
+        "4": addr_book.delete_person,
+        "5": addr_book.search_person,
+        "0": stop_program,
+    }
+    try:
+        dispatcher[argument]()
+    except KeyError:
+        print("Wrong command")
 
 
 if __name__ == "__main__":

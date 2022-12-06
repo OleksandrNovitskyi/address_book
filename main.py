@@ -30,9 +30,9 @@ class AddressBook:
 
     def __init__(self):
         self.people = []
-        self.load_addr_book()
+        self.load()
 
-    def load_addr_book(self):
+    def load(self):
         """Read address_book.csv file as instance of AddressBook"""
         with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
             csvreader = csv.reader(file, delimiter=";")
@@ -41,7 +41,7 @@ class AddressBook:
             for row in read_file_list:
                 self.people.append(Person(*row))
 
-    def save_addr_book(self):
+    def save(self):
         """Write into address_book.csv file"""
         with open("address_book.csv", "w", encoding="utf8", newline="") as file:
             writer = csv.writer(file, delimiter=";")
@@ -103,29 +103,21 @@ class AddressBook:
         argument = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
         result = []
         search_request = input("Search request: ")
-        match argument:
-            case "1":
-                for row in self.people:
-                    if search_request in row.name:
-                        result.append(row)
-            case "2":
-                for row in self.people:
-                    if search_request in row.surname:
-                        result.append(row)
-            case "3":
-                for row in self.people:
-                    if search_request in row.email:
-                        result.append(row)
-            case "4":
-                for row in self.people:
-                    if search_request in row.phone_num:
-                        result.append(row)
-            case _:
-                print("Incorrect input, try again")
-                self.search_person()
-        if len(result) != 0:
-            print(row)
-        else:
+
+        try:
+            for row in self.people:
+                dispatcher2 = {
+                    "1": row.name,
+                    "2": row.surname,
+                    "3": row.email,
+                    "4": row.phone_num,
+                }
+                if search_request in dispatcher2[argument]:
+                    result.append(row)
+                    print(row)
+        except KeyError:
+            pass
+        if len(result) == 0:
             print("Find nothing, try again")
         return result
 
@@ -135,37 +127,33 @@ class AddressBook:
         print(f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{2*n}}{TITLE[3]:<{2*n}}")
         print(*self.people, sep="\n")
 
+    def run(self):
+        """Start using address book"""
+        print("Type action:")
+        argument = input(
+            "1 - Browse; 2 - Add; 3 - Modify; 4 - Delete; 5 - Search; 0 - Exit \n"
+        )
+        dispatcher = {
+            "1": self.browse_addr_book,
+            "2": self.add_person,
+            "3": self.modify_person,
+            "4": self.delete_person,
+            "5": self.search_person,
+            "0": self.stop_program,
+        }
+        try:
+            dispatcher[argument]()
+        except KeyError:
+            pass
 
-addr_book = AddressBook()
-
-
-def stop_program():
-    """Stop program execution"""
-    global EXIT
-    EXIT = False
-    addr_book.save_addr_book()
-
-
-def do_action():
-    """Choose action to do some thing"""
-    print("Type action:")
-    argument = input(
-        "1 - Browse; 2 - Add; 3 - Modify; 4 - Delete; 5 - Search; 0 - Exit \n"
-    )
-    dispatcher = {
-        "1": addr_book.browse_addr_book,
-        "2": addr_book.add_person,
-        "3": addr_book.modify_person,
-        "4": addr_book.delete_person,
-        "5": addr_book.search_person,
-        "0": stop_program,
-    }
-    try:
-        dispatcher[argument]()
-    except KeyError:
-        print("Wrong command")
+    def stop_program(self):
+        """Stop program execution"""
+        global EXIT
+        EXIT = False
+        self.save()
 
 
 if __name__ == "__main__":
+    addr_book = AddressBook()
     while EXIT:
-        do_action()
+        addr_book.run()

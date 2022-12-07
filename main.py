@@ -66,23 +66,22 @@ class AddressBook:
         """Modify person in address book"""
         print("Search person")
         person_list = self.search_person()
-        person = person_list[0]
-        self.delete_person(person)
-        print("Need modify:")
-        modif = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
-        match modif:
-            case "1":
-                person.name = input("New name:\n")
-            case "2":
-                person.surname = input("New surname:\n")
-            case "3":
-                person.email = input("New e-mail:\n")
-            case "4":
-                person.phone_num = input("New phone number:\n")
-            case _:
-                print("Incorrect input, try again")
-                self.modify_person()
-        self.add_person(person)
+        if len(person_list) != 0:
+            person = person_list[0]
+            print("Need modify:")
+            modif = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
+            match modif:
+                case "1":
+                    person.name = input("New name:\n")
+                case "2":
+                    person.surname = input("New surname:\n")
+                case "3":
+                    person.email = input("New e-mail:\n")
+                case "4":
+                    person.phone_num = input("New phone number:\n")
+                case _:
+                    print("Incorrect input, try again")
+                    self.modify_person()
 
     def delete_person(self, *pers):
         """Delete person from address book"""
@@ -94,8 +93,9 @@ class AddressBook:
         else:
             print("Search person for delete")
             person_list = self.search_person()
-            person = person_list[0]
-            self.delete_person(person)
+            if len(person_list) != 0:
+                person = person_list[0]
+                self.delete_person(person)
 
     def search_person(self):
         """Search person in address book"""
@@ -105,16 +105,16 @@ class AddressBook:
         search_request = input("Search request: ")
 
         try:
-            for row in self.people:
-                dispatcher2 = {
-                    "1": row.name,
-                    "2": row.surname,
-                    "3": row.email,
-                    "4": row.phone_num,
+            for person in self.people:
+                filed_dispatcher = {
+                    "1": person.name,
+                    "2": person.surname,
+                    "3": person.email,
+                    "4": person.phone_num,
                 }
-                if search_request in dispatcher2[argument]:
-                    result.append(row)
-                    print(row)
+                if search_request in filed_dispatcher[argument]:
+                    result.append(person)
+                    print(person)
         except KeyError:
             pass
         if len(result) == 0:

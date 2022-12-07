@@ -4,161 +4,156 @@ TITLE = ["Name", "Surname", "e-mail", "Phone_number"]
 EXIT = True
 
 
-def read_addr_book():
-    """Read address_book.csv file and return list of lists with data and first row (titles)"""
-    with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
-        csvreader = csv.reader(file, delimiter=";")
-        next(csvreader)
-        read_file_list = list(csvreader)
-    return read_file_list
+class Person:
+    """Represent person on address book"""
+
+    def __init__(self, name="", surname="", email="", phone_num=""):
+        self.name = name
+        self.surname = surname
+        self.email = email
+        self.phone_num = phone_num
+
+    def __str__(self):
+        n = 15
+        return f"{self.name:<{n}}{self.surname:<{n}}{self.email:<{2*n}}{self.phone_num:<{2*n}}"
+
+    def __iter__(self):
+        return iter([self.name, self.surname, self.email, self.phone_num])
 
 
-def write_addr_book(data_table):
-    """Write into address_book.csv file"""
-    with open("address_book.csv", "w", encoding="utf8", newline="") as file:
-        writer = csv.writer(file, delimiter=";")
-        writer.writerow(TITLE)
-        data_table.sort(key=lambda x: x[0])
-        for row in data_table:
-            writer.writerow(row)
+class AddressBook:
+    """Represent list of people
 
+    Attributes:
+      people: list of Person objects.
+    """
 
-def brows_addr_book(data_table):
-    """Show address book"""
-    n = 15
-    print(f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{n*2}}{TITLE[3]:<{n*2}}")
-    for row in data_table:
-        print(f"{row[0]:<{n}}{row[1]:<{n}}{row[2]:<{n*2}}{row[3]:<{n*2}}")
-    print("")
+    def __init__(self):
+        self.people = []
+        self.load()
 
+    def load(self):
+        """Read address_book.csv file as instance of AddressBook"""
+        with open("address_book.csv", "r+", encoding="utf8", newline="") as file:
+            csvreader = csv.reader(file, delimiter=";")
+            next(csvreader)
+            read_file_list = list(csvreader)
+            for row in read_file_list:
+                self.people.append(Person(*row))
 
-def add_person(*pers):
-    """Add new person to the address book"""
-    person = []
-    if pers:
-        person = pers[0]
-    else:
-        person.append(input("Add Name - "))
-        person.append(input("Add Surname - "))
-        person.append(input("Add e-mail - "))
-        person.append(input("Add Phone number - "))
-    data_table = read_addr_book()
-    data_table.append(person)
-    write_addr_book(data_table)
-    print(f"Done, you have {len(data_table)} people in your address book\n")
+    def save(self):
+        """Write into address_book.csv file"""
+        with open("address_book.csv", "w", encoding="utf8", newline="") as file:
+            writer = csv.writer(file, delimiter=";")
+            writer.writerow(TITLE)
+            for row in self.people:
+                writer.writerow(row)
 
+    def add_person(self, *pers):
+        """Add new person to the address book"""
+        if pers:
+            person = pers[0]
+        else:
+            name = input("Add Name - ")
+            surname = input("Add Surname - ")
+            email = input("Add e-mail - ")
+            phone_num = input("Add Phone number - ")
+            person = Person(name, surname, email, phone_num)
+        self.people.append(person)
+        print(f"Done, you have {len(self.people)} people in your address book\n")
 
-def modify_person():
-    """Modify person in address book"""
-    print("Search person")
-    person_list = search_person()
-    while len(person_list) != 1:
-        print("Search too mach people, specify your search request")
-        person_list = search_person()
-    person = person_list[0]
-    delete_person(person)
-    print("Need modify:")
-    modif = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
-    match modif:
-        case "1":
-            person[0] = input("New name:\n")
-        case "2":
-            person[1] = input("New surname:\n")
-        case "3":
-            person[2] = input("New e-mail:\n")
-        case "4":
-            person[3] = input("New phone number:\n")
-        case _:
-            print("Incorrect input, try again")
-            modify_person()
-    add_person(person)
+    def modify_person(self):
+        """Modify person in address book"""
+        print("Search person")
+        person_list = self.search_person()
+        if len(person_list) != 0:
+            person = person_list[0]
+            print("Need modify:")
+            modif = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
+            match modif:
+                case "1":
+                    person.name = input("New name:\n")
+                case "2":
+                    person.surname = input("New surname:\n")
+                case "3":
+                    person.email = input("New e-mail:\n")
+                case "4":
+                    person.phone_num = input("New phone number:\n")
+                case _:
+                    print("Incorrect input, try again")
+                    self.modify_person()
 
+    def delete_person(self, *pers):
+        """Delete person from address book"""
+        person = []
+        if pers:
+            person = pers[0]
+            self.people.remove(person)
+            print("The person has been removed")
+        else:
+            print("Search person for delete")
+            person_list = self.search_person()
+            if len(person_list) != 0:
+                person = person_list[0]
+                self.delete_person(person)
 
-def delete_person(*pers):
-    """Delete person from address book"""
-    person = []
-    if pers:  # != ():
-        person = pers[0]
-        data_table = read_addr_book()
-        data_table.remove(person)
-        write_addr_book(data_table)
-        print("The person has been removed")
-    else:
-        print("Search person for delete")
-        person_list = search_person()
-        while len(person_list) != 1:
-            print("Search too mach people, specify your search request")
-            person_list = search_person()
-        person = person_list[0]
-        delete_person(person)
+    def search_person(self):
+        """Search person in address book"""
+        print("Search by:")
+        argument = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
+        result = []
+        search_request = input("Search request: ")
 
-
-def finder(col_number, search_request):
-    """Find part of word in data_table"""
-    data_table = read_addr_book()
-    result = []
-    for row in data_table:
         try:
-            if search_request in row[col_number]:
-                result.append(row)
-        except:  # pylint: disable=bare-except
+            for person in self.people:
+                filed_dispatcher = {
+                    "1": person.name,
+                    "2": person.surname,
+                    "3": person.email,
+                    "4": person.phone_num,
+                }
+                if search_request in filed_dispatcher[argument]:
+                    result.append(person)
+                    print(person)
+        except KeyError:
+            pass
+        if len(result) == 0:
             print("Find nothing, try again")
-            search_person()
-    return result
+        return result
 
+    def browse_addr_book(self):
+        """Browse Address book to screen"""
+        n = 15
+        print(f"{TITLE[0]:<{n}}{TITLE[1]:<{n}}{TITLE[2]:<{2*n}}{TITLE[3]:<{2*n}}")
+        print(*self.people, sep="\n")
 
-def search_person():
-    """Search person in address book"""
-    print("Search by:")
-    argument = input("1 - Name; 2 - Surname; 3 - e-mail; 4 - Phone number\n")
-    search_request = input("Search request: ")
+    def run(self):
+        """Start using address book"""
+        print("Type action:")
+        argument = input(
+            "1 - Browse; 2 - Add; 3 - Modify; 4 - Delete; 5 - Search; 0 - Exit \n"
+        )
+        dispatcher = {
+            "1": self.browse_addr_book,
+            "2": self.add_person,
+            "3": self.modify_person,
+            "4": self.delete_person,
+            "5": self.search_person,
+            "0": self.stop_program,
+        }
+        try:
+            dispatcher[argument]()
+        except KeyError:
+            pass
 
-    match argument:
-        case "1":
-            res = finder(0, search_request)
-        case "2":
-            res = finder(1, search_request)
-        case "3":
-            res = finder(2, search_request)
-        case "4":
-            res = finder(3, search_request)
-        case _:
-            print("Incorrect input, try again")
-            search_person()
-    try:
-        if len(res) != 0:
-            brows_addr_book(res)
-    except:  # pylint: disable=bare-except
-        print("--- Nothing found ---\n")
-        search_person()
-        res = []
-    return res
-
-
-def do_action():
-    """Choose action to do some thing"""
-    global EXIT
-    print("Type action:")
-    argument = input(
-        "1 - Browse; 2 - Add; 3 - Modify; 4 - Delete; 5 - Search; 0 - Exit \n"
-    )
-    match argument:
-        case "1":
-            brows_addr_book(read_addr_book())
-        case "2":
-            add_person()
-        case "3":
-            modify_person()
-        case "4":
-            delete_person()
-        case "5":
-            search_person()
-        case "0":
-            EXIT = False
-        case _:
-            print("Incorrect input")
+    def stop_program(self):
+        """Stop program execution"""
+        global EXIT
+        EXIT = False
+        self.save()
 
 
 if __name__ == "__main__":
+    addr_book = AddressBook()
     while EXIT:
-        do_action()
+        addr_book.run()
